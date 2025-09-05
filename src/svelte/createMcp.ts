@@ -59,6 +59,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
     transportType = 'auto',
     preventAutoAuth = false,
     onPopupWindow,
+    allowedOrigins = [],
   } = options
 
   // --- Internal mutable refs (not reactive) ---
@@ -566,7 +567,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
       }
       // Auth callback listener
       const messageHandler = (event: MessageEvent) => {
-        if (event.origin !== window.location.origin) return
+        if (event.origin !== window.location.origin && !allowedOrigins.includes(event.origin)) return
         const t = (event as any)?.data?.type
         if (t === 'mcp_auth_callback' || t === 'mcp:oauthCallback') {
           addLog('info', 'Received auth callback message.', event.data)
@@ -602,6 +603,19 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
 
   // Attach methods to the store object
   Object.assign(store, {
+    callTool,
+    listResources,
+    readResource,
+    listPrompts,
+    getPrompt,
+    retry,
+    disconnect: () => { void doDisconnect() },
+    authenticate: () => { void authenticate() },
+    clearStorage,
+  })
+
+  // Also attach methods to the current snapshot so $mcp.callTool works
+  Object.assign(current, {
     callTool,
     listResources,
     readResource,

@@ -13,11 +13,11 @@ Try it out: [Chat Demo](https://chat.use-mcp.dev) | [MCP Inspector](https://insp
 ## Installation
 
 ```bash
-npm install use-mcp
+npm install @gary149/use-mcp
 # or
-pnpm add use-mcp
+pnpm add @gary149/use-mcp
 # or
-yarn add use-mcp
+yarn add @gary149/use-mcp
 ```
 
 ## Development
@@ -60,7 +60,7 @@ cd test && pnpm test:ui           # Run tests with interactive UI
 ## Quick Start (React)
 
 ```tsx
-import { useMcp } from 'use-mcp/react'
+import { useMcp } from '@gary149/use-mcp/react'
 
 function MyAIComponent() {
   const {
@@ -151,7 +151,7 @@ function MyAIComponent() {
 ```ts
 // src/lib/mcp.ts
 import { browser } from '$app/environment'
-import { createMcp } from 'use-mcp/svelte'
+import { createMcp } from '@gary149/use-mcp/svelte'
 
 export const mcp = browser ? createMcp({
   url: 'https://your-mcp-server.com',
@@ -249,13 +249,15 @@ export default function OAuthCallbackPage() {
 <!-- src/routes/oauth/callback/+page.svelte -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { onMcpAuthorization } from 'use-mcp'
+  import { onMcpAuthorization } from '@gary149/use-mcp'
   onMount(() => onMcpAuthorization())
 </script>
 
 <h1>Authenticating…</h1>
 <p>This window should close automatically.</p>
 ```
+
+Note: When using HTTP streaming transport across origins, ensure your MCP server CORS configuration allows and exposes the `Mcp-Session-Id` header so the browser can maintain the session. If your OAuth callback is hosted on a different origin (e.g., auth subdomain), pass `allowedOrigins: ['https://auth.example.com']` to `createMcp(...)` so the popup callback message is accepted.
 
 ## API Reference
 
