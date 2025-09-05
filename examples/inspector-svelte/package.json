@@ -21,6 +21,6 @@
     "vite": "^7.1.4"
   },
   "dependencies": {
-    "@gary149/use-mcp": "^0.1.2"
+    "@gary149/use-mcp-svelte": "^0.1.4"
   }
 }
