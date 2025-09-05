@@ -1,7 +1,7 @@
 {
   "name": "@gary149/use-mcp",
   "repository": "https://github.com/gary149/use-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "type": "module",
   "files": [
