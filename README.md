@@ -10,6 +10,11 @@ A lightweight client for connecting to [Model Context Protocol (MCP)](https://gi
 
 Try it out: [Chat Demo](https://chat.use-mcp.dev) | [MCP Inspector](https://inspector.use-mcp.dev) | [Cloudflare Workers AI Playground](https://playground.ai.cloudflare.com/)
 
+Examples in this repo:
+- examples/chat-ui – React chat interface using `use-mcp`
+- examples/inspector – React MCP inspector
+- examples/inspector-svelte – SvelteKit inspector with per‑tool inputs
+
 ## Installation
 
 ```bash
@@ -22,7 +27,7 @@ yarn add @gary149/use-mcp
 
 ## Development
 
-To run the development environment with all examples and servers:
+To run the development environment with the React examples and servers:
 
 ```bash
 pnpm dev
@@ -33,6 +38,15 @@ This starts:
 - **Chat UI**: http://localhost:5002 - Example chat interface
 - **Hono MCP Server**: http://localhost:5101 - Example MCP server
 - **CF Agents MCP Server**: http://localhost:5102 - Cloudflare Workers AI MCP server
+
+Svelte inspector example:
+
+```bash
+cd examples/inspector-svelte
+pnpm install
+pnpm dev
+```
+Then open the local URL shown by Vite and connect to an MCP server (e.g. https://huggingface.co/mcp). The UI lists tools and provides input fields generated from each tool's JSON schema.
 
 ### Testing
 
