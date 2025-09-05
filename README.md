@@ -4,16 +4,16 @@
 
 </div>
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/modelcontextprotocol/use-mcp?logo=github&style=flat&label=​)](https://github.com/modelcontextprotocol/use-mcp)&nbsp; [![npm](https://img.shields.io/npm/v/use-mcp?label=​&logo=npm)](https://www.npmjs.com/package/use-mcp) ![GitHub License](https://img.shields.io/github/license/modelcontextprotocol/use-mcp)
+[![GitHub last commit](https://img.shields.io/github/last-commit/gary149/use-mcp?logo=github&style=flat&label=)](https://github.com/gary149/use-mcp)&nbsp; [![npm](https://img.shields.io/npm/v/%40gary149%2Fuse-mcp?label=&logo=npm)](https://www.npmjs.com/package/@gary149/use-mcp) ![GitHub License](https://img.shields.io/github/license/gary149/use-mcp)
 
 A lightweight client for connecting to [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) servers. Provides a React hook and a Svelte store adapter to simplify authentication and tool calling.
 
 Try it out: [Chat Demo](https://chat.use-mcp.dev) | [MCP Inspector](https://inspector.use-mcp.dev) | [Cloudflare Workers AI Playground](https://playground.ai.cloudflare.com/)
 
 Examples in this repo:
-- examples/chat-ui – React chat interface using `use-mcp`
-- examples/inspector – React MCP inspector
-- examples/inspector-svelte – SvelteKit inspector with per‑tool inputs
+- [examples/chat-ui](examples/chat-ui) – React chat interface using `@gary149/use-mcp`
+- [examples/inspector](examples/inspector) – React MCP inspector
+- [examples/inspector-svelte](examples/inspector-svelte) – SvelteKit inspector with per‑tool inputs
 
 ## Installation
 
@@ -209,7 +209,7 @@ To handle the OAuth authentication flow, you need to set up a callback endpoint 
 // App.tsx with React Router
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
-import { onMcpAuthorization } from 'use-mcp'
+import { onMcpAuthorization } from '@gary149/use-mcp'
 
 function OAuthCallback() {
   useEffect(() => {
@@ -241,7 +241,7 @@ function App() {
 ```tsx
 // pages/oauth/callback.tsx
 import { useEffect } from 'react'
-import { onMcpAuthorization } from 'use-mcp'
+import { onMcpAuthorization } from '@gary149/use-mcp'
 
 export default function OAuthCallbackPage() {
   useEffect(() => {
