@@ -18,6 +18,11 @@
       "types": "./dist/react/index.d.ts",
       "require": "./dist/react/index.js",
       "import": "./dist/react/index.js"
+    },
+    "./svelte": {
+      "types": "./dist/svelte/index.d.ts",
+      "require": "./dist/svelte/index.js",
+      "import": "./dist/svelte/index.js"
     }
   },
   "scripts": {
@@ -44,15 +49,20 @@
     "husky": "^9.1.7",
     "prettier": "^3.5.3",
     "react": "^19.0.0",
+    "svelte": "^5.0.0",
     "tsup": "^8.4.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "wrangler": "^4.20.2"
   },
+  "peerDependencies": {
+    "svelte": "^4.2.0 || ^5.0.0"
+  },
   "tsup": {
     "entry": [
       "src/index.ts",
-      "src/react/index.ts"
+      "src/react/index.ts",
+      "src/svelte/index.ts"
     ],
     "format": [
       "esm"
@@ -62,6 +72,7 @@
     "outDir": "dist",
     "external": [
       "react",
+      "svelte",
       "@modelcontextprotocol/sdk"
     ]
   },
