@@ -1,5 +1,5 @@
 import { browser } from '$app/environment'
-import { createMcp } from '@gary149/use-mcp-svelte/svelte'
+import { createMcp } from '@gary149/use-mcp/svelte'
 
 export const mcp = browser
   ? createMcp({

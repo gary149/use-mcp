@@ -1,28 +1,28 @@
 <div class="oranda-hide">
 
-# 🦑 use-mcp-svelte 🦑
+# 🦑 use-mcp 🦑
 
 </div>
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/gary149/use-mcp-svelte?logo=github&style=flat&label=)](https://github.com/gary149/use-mcp-svelte)&nbsp; [![npm](https://img.shields.io/npm/v/%40gary149%2Fuse-mcp-svelte?label=&logo=npm)](https://www.npmjs.com/package/@gary149/use-mcp-svelte) ![GitHub License](https://img.shields.io/github/license/gary149/use-mcp-svelte)
+[![GitHub last commit](https://img.shields.io/github/last-commit/gary149/use-mcp?logo=github&style=flat&label=)](https://github.com/gary149/use-mcp)&nbsp; [![npm](https://img.shields.io/npm/v/%40gary149%2Fuse-mcp?label=&logo=npm)](https://www.npmjs.com/package/@gary149/use-mcp) ![GitHub License](https://img.shields.io/github/license/gary149/use-mcp)
 
-A lightweight client for connecting to [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) servers. Focused on Svelte with a clean store adapter; React bindings are also available.
+A lightweight client for connecting to [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) servers. Provides a React hook and a Svelte store adapter to simplify authentication and tool calling.
 
 Try it out: [Chat Demo](https://chat.use-mcp.dev) | [MCP Inspector](https://inspector.use-mcp.dev) | [Cloudflare Workers AI Playground](https://playground.ai.cloudflare.com/)
 
-Examples in this repo (Svelte first):
-- [examples/inspector-svelte](examples/inspector-svelte) – SvelteKit inspector with per‑tool inputs
-- [examples/chat-ui](examples/chat-ui) – React chat interface using `@gary149/use-mcp-svelte/react`
+Examples in this repo:
+- [examples/chat-ui](examples/chat-ui) – React chat interface using `@gary149/use-mcp`
 - [examples/inspector](examples/inspector) – React MCP inspector
+- [examples/inspector-svelte](examples/inspector-svelte) – SvelteKit inspector with per‑tool inputs
 
-## Installation (Svelte)
+## Installation
 
 ```bash
-npm install @gary149/use-mcp-svelte
+npm install @gary149/use-mcp
 # or
-pnpm add @gary149/use-mcp-svelte
+pnpm add @gary149/use-mcp
 # or
-yarn add @gary149/use-mcp-svelte
+yarn add @gary149/use-mcp
 ```
 
 ## Development
@@ -71,48 +71,10 @@ cd test && pnpm test:ui           # Run tests with interactive UI
 - 📝 Comprehensive logging for debugging
 - 🌐 Works with both HTTP and SSE (Server-Sent Events) transports (HTTP streaming recommended)
 
-## Quick Start (Svelte/SvelteKit)
-```ts
-// src/lib/mcp.ts
-import { browser } from '$app/environment'
-import { createMcp } from '@gary149/use-mcp-svelte/svelte'
-
-export const mcp = browser ? createMcp({
-  url: 'https://your-mcp-server.com',
-  clientName: 'My App',
-  autoReconnect: true,
-  // transportType: 'http', // recommended; SSE is legacy
-}) : undefined
-```
-
-```svelte
-<!-- src/routes/+page.svelte -->
-<script lang="ts">
-  import { mcp } from '$lib/mcp'
-</script>
-
-{#if mcp}
-  {#if $mcp.state === 'failed'}
-    <p>Connection failed: {$mcp.error}</p>
-    <button on:click={() => mcp.retry()}>Retry</button>
-    <button on:click={() => mcp.authenticate()}>Authenticate Manually</button>
-  {:else if $mcp.state !== 'ready'}
-    <p>Connecting to AI service…</p>
-  {:else}
-    <h2>Available Tools: {$mcp.tools.length}</h2>
-    <button on:click={() => mcp.callTool('search', { query: 'example search' })}>
-      Search
-    </button>
-  {/if}
-{:else}
-  <p>Loading…</p>
-{/if}
-```
-
 ## Quick Start (React)
 
 ```tsx
-import { useMcp } from '@gary149/use-mcp-svelte/react'
+import { useMcp } from '@gary149/use-mcp/react'
 
 function MyAIComponent() {
   const {
@@ -198,6 +160,44 @@ function MyAIComponent() {
 }
 ```
 
+## Quick Start (Svelte/SvelteKit)
+
+```ts
+// src/lib/mcp.ts
+import { browser } from '$app/environment'
+import { createMcp } from '@gary149/use-mcp/svelte'
+
+export const mcp = browser ? createMcp({
+  url: 'https://your-mcp-server.com',
+  clientName: 'My App',
+  autoReconnect: true,
+  // transportType: 'http', // recommended; SSE is legacy
+}) : undefined
+```
+
+```svelte
+<!-- src/routes/+page.svelte -->
+<script lang="ts">
+  import { mcp } from '$lib/mcp'
+</script>
+
+{#if mcp}
+  {#if $mcp.state === 'failed'}
+    <p>Connection failed: {$mcp.error}</p>
+    <button on:click={() => mcp.retry()}>Retry</button>
+    <button on:click={() => mcp.authenticate()}>Authenticate Manually</button>
+  {:else if $mcp.state !== 'ready'}
+    <p>Connecting to AI service…</p>
+  {:else}
+    <h2>Available Tools: {$mcp.tools.length}</h2>
+    <button on:click={() => mcp.callTool('search', { query: 'example search' })}>
+      Search
+    </button>
+  {/if}
+{:else}
+  <p>Loading…</p>
+{/if}
+```
 
 ## Setting Up OAuth Callback
 
@@ -209,7 +209,7 @@ To handle the OAuth authentication flow, you need to set up a callback endpoint 
 // App.tsx with React Router
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useEffect } from 'react'
-import { onMcpAuthorization } from '@gary149/use-mcp-svelte'
+import { onMcpAuthorization } from '@gary149/use-mcp'
 
 function OAuthCallback() {
   useEffect(() => {
@@ -241,7 +241,7 @@ function App() {
 ```tsx
 // pages/oauth/callback.tsx
 import { useEffect } from 'react'
-import { onMcpAuthorization } from '@gary149/use-mcp-svelte'
+import { onMcpAuthorization } from '@gary149/use-mcp'
 
 export default function OAuthCallbackPage() {
   useEffect(() => {
@@ -263,7 +263,7 @@ export default function OAuthCallbackPage() {
 <!-- src/routes/oauth/callback/+page.svelte -->
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { onMcpAuthorization } from '@gary149/use-mcp-svelte'
+  import { onMcpAuthorization } from '@gary149/use-mcp'
   onMount(() => onMcpAuthorization())
 </script>
 
