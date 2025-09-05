@@ -175,7 +175,7 @@
               {#if resultsByTool[tool.name]}
                 <div class="mt-2">
                   <div class="text-xs text-slate-500 mb-0.5">Result</div>
-                  <pre class="rounded-md border bg-slate-50 p-2 text-xs overflow-auto whitespace-nowrap"><code>{resultsByTool[tool.name]}</code></pre>
+                  <pre class="rounded-md border bg-slate-50 p-2 text-xs overflow-auto whitespace-break-spaces"><code>{resultsByTool[tool.name]}</code></pre>
                 </div>
               {/if}
             </li>
