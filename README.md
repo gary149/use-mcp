@@ -4,6 +4,9 @@
 
 </div>
 
+> [!NOTE]  
+> This package includes Svelte support. Use the Svelte adapter via `@gary149/use-mcp/svelte` and see the Svelte inspector example in `examples/inspector-svelte`.
+
 [![GitHub last commit](https://img.shields.io/github/last-commit/gary149/use-mcp?logo=github&style=flat&label=)](https://github.com/gary149/use-mcp)&nbsp; [![npm](https://img.shields.io/npm/v/%40gary149%2Fuse-mcp?label=&logo=npm)](https://www.npmjs.com/package/@gary149/use-mcp) ![GitHub License](https://img.shields.io/github/license/gary149/use-mcp)
 
 A lightweight client for connecting to [Model Context Protocol (MCP)](https://github.com/modelcontextprotocol) servers. Provides a React hook and a Svelte store adapter to simplify authentication and tool calling.
