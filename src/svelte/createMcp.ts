@@ -11,7 +11,7 @@ import {
   type ResourceTemplate,
   type Prompt,
 } from '@modelcontextprotocol/sdk/types.js'
-import { SSEClientTransport, type SSEClientTransportOptions } from '@modelcontextprotocol/sdk/client/sse.js'
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { auth, UnauthorizedError } from '@modelcontextprotocol/sdk/client/auth.js'
@@ -62,6 +62,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
   } = options
 
   // --- Internal mutable refs (not reactive) ---
+  const serverUrl = new URL(sanitizeUrl(url)).toString()
   let client: Client | null = null
   let transport: Transport | null = null
   let authProvider: BrowserOAuthClientProvider | null = null
@@ -183,11 +184,11 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
     successfulTransportRef = null
     setValue({ error: undefined, authUrl: undefined })
     setState('discovering')
-    addLog('info', `Connecting attempt #${connectAttempt} to ${url}...`)
+    addLog('info', `Connecting attempt #${connectAttempt} to ${serverUrl}...`)
 
     // init provider/client
     if (!authProvider) {
-      authProvider = new BrowserOAuthClientProvider(url, {
+      authProvider = new BrowserOAuthClientProvider(serverUrl, {
         storageKeyPrefix,
         clientName,
         clientUri,
@@ -215,20 +216,22 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
           transport = null
         }
 
-        const commonOptions: SSEClientTransportOptions = {
-          authProvider,
-          requestInit: { headers: { Accept: 'application/json, text/event-stream', ...customHeaders } },
-        }
-        const sanitizedUrl = sanitizeUrl(url)
-        const targetUrl = new URL(sanitizedUrl)
+        const baseOpts = { authProvider } as const
+        const targetUrl = new URL(serverUrl)
         addLog('debug', `Creating ${kind.toUpperCase()} transport for URL: ${targetUrl.toString()}`)
 
         if (kind === 'http') {
           addLog('debug', 'Creating StreamableHTTPClientTransport...')
-          transportInstance = new StreamableHTTPClientTransport(targetUrl, commonOptions)
+          transportInstance = new StreamableHTTPClientTransport(targetUrl, {
+            ...baseOpts,
+            requestInit: { headers: { ...customHeaders } },
+          })
         } else {
           addLog('debug', 'Creating SSEClientTransport...')
-          transportInstance = new SSEClientTransport(targetUrl, commonOptions)
+          transportInstance = new SSEClientTransport(targetUrl, {
+            ...baseOpts,
+            requestInit: { headers: { Accept: 'text/event-stream', ...customHeaders } },
+          })
         }
         transport = transportInstance
       } catch (err) {
@@ -318,7 +321,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
 
           try {
             assert(authProvider, 'Auth Provider must be initialized')
-            const authResult = await auth(authProvider, { serverUrl: url })
+            const authResult = await auth(authProvider, { serverUrl })
             if (!isMounted) return 'failed'
             if (authResult === 'AUTHORIZED') {
               addLog('info', 'Authentication successful. Re-attempting connection...')
@@ -344,15 +347,15 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
       }
     }
 
-    let finalStatus: 'success' | 'auth_redirect' | 'failed' | 'fallback' = 'failed'
+    let finalStatus: 'success' | 'auth_redirect' | 'failed' = 'failed'
     if (transportType === 'sse') {
       finalStatus = await tryConnectWithTransport('sse')
     } else if (transportType === 'http') {
       finalStatus = await tryConnectWithTransport('http')
     } else {
       const httpResult = await tryConnectWithTransport('http')
-      if (httpResult === 'fallback' && isMounted && stateRef !== 'authenticating') {
-        addLog('info', 'HTTP failed, attempting SSE fallback...')
+      if (httpResult !== 'success' && httpResult !== 'auth_redirect') {
+        addLog('info', 'HTTP connect failed; attempting SSE fallback...')
         finalStatus = await tryConnectWithTransport('sse')
       } else {
         finalStatus = httpResult
@@ -383,10 +386,13 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
         addLog('warn', 'Tool call unauthorized, attempting re-authentication...')
         setState('authenticating')
         clearAuthTimeout()
-        authTimeout = setTimeout(() => {}, AUTH_TIMEOUT)
+        authTimeout = setTimeout(() => {
+          if (!isMounted) return
+          failConnection('Authentication timed out. Please try again.')
+        }, AUTH_TIMEOUT)
         try {
           assert(authProvider, 'Auth Provider not available for tool re-auth')
-          const authResult = await auth(authProvider, { serverUrl: url })
+          const authResult = await auth(authProvider, { serverUrl })
           if (!isMounted) return
           if (authResult === 'AUTHORIZED') {
             addLog('info', 'Re-authentication successful. Reconnecting...')
@@ -493,10 +499,13 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
     } else if (s === 'pending_auth') {
       setState('authenticating')
       clearAuthTimeout()
-      authTimeout = setTimeout(() => {}, AUTH_TIMEOUT)
+      authTimeout = setTimeout(() => {
+        if (!isMounted) return
+        failConnection('Authentication timed out. Please try again.')
+      }, AUTH_TIMEOUT)
       try {
         assert(authProvider, 'Auth Provider not available for manual auth')
-        const authResult = await auth(authProvider, { serverUrl: url })
+        const authResult = await auth(authProvider, { serverUrl })
         if (!isMounted) return
         if (authResult === 'AUTHORIZED') {
           addLog('info', 'Manual authentication successful. Re-attempting connection...')
@@ -525,7 +534,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
   function clearStorage() {
     if (authProvider) {
       const count = authProvider.clearStorage()
-      addLog('info', `Cleared ${count} item(s) from localStorage for ${url}.`)
+      addLog('info', `Cleared ${count} item(s) from localStorage for ${serverUrl}.`)
       setValue({ authUrl: undefined })
       doDisconnect()
     } else {
@@ -544,8 +553,8 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
 
     // Initialize/refresh provider on mount/options change
     if (isBrowser()) {
-      if (!authProvider || authProvider.serverUrl !== url) {
-        authProvider = new BrowserOAuthClientProvider(url, {
+      if (!authProvider || authProvider.serverUrl !== serverUrl) {
+        authProvider = new BrowserOAuthClientProvider(serverUrl, {
           storageKeyPrefix,
           clientName,
           clientUri,
@@ -558,7 +567,8 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
       // Auth callback listener
       const messageHandler = (event: MessageEvent) => {
         if (event.origin !== window.location.origin) return
-        if (event.data?.type === 'mcp_auth_callback') {
+        const t = (event as any)?.data?.type
+        if (t === 'mcp_auth_callback' || t === 'mcp:oauthCallback') {
           addLog('info', 'Received auth callback message.', event.data)
           clearAuthTimeout()
           if (event.data.success) {
