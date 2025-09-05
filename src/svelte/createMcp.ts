@@ -117,6 +117,11 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
 
   function setValue(patch: Partial<UseMcpResult>) {
     current = { ...current, ...patch }
+    // Keep stateRef in sync whenever state is updated via setValue
+    if (typeof patch.state !== 'undefined') {
+      stateRef = patch.state as UseMcpResult['state']
+      scheduleAutoRetryIfNeeded()
+    }
     set(current)
   }
 
@@ -204,7 +209,7 @@ export function createMcp(options: UseMcpOptions): Readable<UseMcpResult> & Omit
       addLog('debug', 'MCP Client initialized in connect.')
     }
 
-    const tryConnectWithTransport = async (kind: TransportType): Promise<'success' | 'fallback' | 'auth_redirect' | 'failed'> => {
+    const tryConnectWithTransport = async (kind: TransportType): Promise<'success' | 'auth_redirect' | 'failed'> => {
       addLog('info', `Attempting connection with ${kind.toUpperCase()} transport...`)
       if (stateRef !== 'authenticating') setState('connecting')
 

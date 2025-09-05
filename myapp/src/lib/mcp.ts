@@ -6,7 +6,6 @@ export const mcp = browser
       url: 'https://huggingface.co/mcp',
       clientName: 'My App',
       autoReconnect: true,
-      transportType: 'http'
+      transportType: 'http',
     })
   : undefined
-
